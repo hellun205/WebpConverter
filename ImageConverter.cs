@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using GroupDocs.Conversion;
@@ -12,18 +13,19 @@ namespace WebpConverter;
 
 public class ImageConverter
 {
-  private delegate void tmx(string path, ImageFileType ext, bool subfol);
-
   private List<string> pathList = new List<string>();
   private int progressMax;
   private int progress;
 
   public delegate void _onProgressed(string statusText);
-
   public delegate void _onProgressedBar(int max, int value);
+  public delegate void _beforeExecute();
+  public delegate void _afterExecute();
 
   public event _onProgressed? OnProgress;
   public event _onProgressedBar? OnProgressBar;
+  public event _beforeExecute? BeforeExecute;
+  public event _afterExecute? AfterExecute;
 
   public void ConvertImage(string path, ImageFileType before, ImageFileType convertTo)
   {
@@ -43,11 +45,11 @@ public class ImageConverter
       converter.Convert($"{dirPath}\\{fileName}.{convertTo.Extension}", options);
     }
 
-    progress += 1;
+    progress += 8;
     OnProgressBar?.Invoke(progressMax, progress);
   }
 
-  private async Task FindImages(string path, ImageFileType ext, bool subfolders)
+  private void FindImages(string path, ImageFileType ext, bool subfolders)
   {
     try
     {
@@ -58,7 +60,7 @@ public class ImageConverter
       foreach (var fPath in files)
       {
         OnProgress?.Invoke("find: " + fPath);
-        progressMax += 2;
+        progressMax += 10;
         progress += 1;
         OnProgressBar?.Invoke(progressMax, progress);
       }
@@ -76,7 +78,7 @@ public class ImageConverter
     }
   }
 
-  private async Task ConvertImages(ImageFileType originalExt, ImageFileType convertToExt)
+  private void ConvertImages(ImageFileType originalExt, ImageFileType convertToExt)
   {
     foreach (var file in pathList)
     {
@@ -84,7 +86,7 @@ public class ImageConverter
     }
   }
 
-  private async Task DeleteImages()
+  private void DeleteImages()
   {
     foreach (var file in pathList)
     {
@@ -95,14 +97,27 @@ public class ImageConverter
     }
   }
 
-  public async Task Execute(string path, ImageFileType originalExt, ImageFileType convertToExt, bool subfolders)
+  public void Execute(string path, ImageFileType originalExt, ImageFileType convertToExt, bool subfolders)
   {
-    Task findTask = FindImages(path, originalExt, subfolders);
-    Task convertTask = ConvertImages(originalExt, convertToExt);
-    Task deleteTask = DeleteImages();
+    Thread findTask = new Thread(new ThreadStart(() =>
+    {
+      BeforeExecute?.Invoke();
+      FindImages(path, originalExt, subfolders);
+      ConvertImages(originalExt, convertToExt);
+      DeleteImages();
+      OnProgress?.Invoke("convert completed!");
+      AfterExecute?.Invoke();
+      Clear();
+    }));
 
-    await findTask;
-    await convertTask;
-    await deleteTask;
+
+    findTask.Start();
+  }
+
+  public void Clear()
+  {
+    pathList.Clear();
+    progressMax = 0;
+    progress = 0;
   }
 }

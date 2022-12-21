@@ -31,6 +31,9 @@ namespace WebpConverter
       InitializeComponent();
       imgConverter.OnProgress += ImgConverterOnOnProgress;
       imgConverter.OnProgressBar += ImgConverterOnOnProgressBar;
+      imgConverter.AfterExecute += ImgConverterOnAfterExecute;
+      imgConverter.BeforeExecute += ImgConverterOnBeforeExecute;
+
       foreach (var ext in ImageFileType.GetAll<ImageFileType>())
       {
         cbbBeforeExt.Items.Add(ext.Extension);
@@ -39,6 +42,26 @@ namespace WebpConverter
 
       cbbBeforeExt.SelectedValue = ImageFileType.Webp.Extension;
       cbbAfterExt.SelectedValue = ImageFileType.Jpg.Extension;
+    }
+
+    private void ImgConverterOnBeforeExecute()
+    {
+      Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { SetEnabled(false); });
+    }
+
+    private void ImgConverterOnAfterExecute()
+    {
+      Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { SetEnabled(true); });
+    }
+
+    private void SetEnabled(bool status)
+    {
+      btnExecute.IsEnabled = status;
+      tbPath.IsEnabled = status;
+      cbSubfolders.IsEnabled = status;
+      cbbAfterExt.IsEnabled = status;
+      cbbBeforeExt.IsEnabled = status;
+      btnOpen.IsEnabled = status;
     }
 
     private void ImgConverterOnOnProgressBar(int max, int value)
@@ -52,7 +75,7 @@ namespace WebpConverter
 
     private void ImgConverterOnOnProgress(string statustext)
     {
-      Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { lbProgress.Content = statustext; });
+      Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { lbProgress.Text = statustext; });
     }
 
     private void BtnOpen_OnClick(object sender, RoutedEventArgs e)
@@ -67,12 +90,8 @@ namespace WebpConverter
 
     private async void BtnExecute_OnClick(object sender, RoutedEventArgs e)
     {
-      Task convert = imgConverter.Execute(tbPath.Text, (ImageFileType) (ImageFileType.FromExtension(cbbBeforeExt.Text)),
+      imgConverter.Execute(tbPath.Text, (ImageFileType) (ImageFileType.FromExtension(cbbBeforeExt.Text)),
         (ImageFileType) (ImageFileType.FromExtension(cbbAfterExt.Text)), cbSubfolders.IsChecked.Value);
-
-      convert.Start();
     }
-
-   
   }
 }
