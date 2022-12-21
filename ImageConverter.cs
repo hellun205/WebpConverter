@@ -1,8 +1,9 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows;
 using GroupDocs.Conversion;
 using GroupDocs.Conversion.FileTypes;
 using GroupDocs.Conversion.Options.Convert;
@@ -11,87 +12,97 @@ namespace WebpConverter;
 
 public class ImageConverter
 {
-  private List<string> pathList = new List<string>();
-  public int progressMax;
-  public int progress;
+  private delegate void tmx(string path, ImageFileType ext, bool subfol);
 
-  public static void ConvertImage(string path, ImageFileType convertTo)
+  private List<string> pathList = new List<string>();
+  private int progressMax;
+  private int progress;
+
+  public delegate void _onProgressed(string statusText);
+
+  public delegate void _onProgressedBar(int max, int value);
+
+  public event _onProgressed? OnProgress;
+  public event _onProgressedBar? OnProgressBar;
+
+  public void ConvertImage(string path, ImageFileType before, ImageFileType convertTo)
   {
     var fileInfo = new FileInfo(path);
-    var fileName = fileInfo.Name;
+    var fileName = fileInfo.Name.Replace($".{before.Extension}", "");
     var dirPath = fileInfo.Directory.FullName;
-    
+
+    OnProgress?.Invoke("convert: " + path);
+
     using (Converter converter = new Converter(path))
     {
       ImageConvertOptions options = new ImageConvertOptions
-      { // Set the conversion format to JPG
+      {
+        // Set the conversion format to JPG
         Format = convertTo
       };
       converter.Convert($"{dirPath}\\{fileName}.{convertTo.Extension}", options);
     }
+
+    progress += 1;
+    OnProgressBar?.Invoke(progressMax, progress);
   }
 
-  public void FindImg(string path, ImageFileType ext, bool subfolders)
-  {
-    pathList.Clear();
-    FindImage(path, ext, subfolders);
-  }
-
-  private bool FindImage(string path, ImageFileType ext, bool subfolders)
+  private async Task FindImages(string path, ImageFileType ext, bool subfolders)
   {
     try
     {
       string[] dirs = Directory.GetDirectories(path);
       string[] files = Directory.GetFiles(path, $"*.{ext.Extension}");
       pathList.AddRange(files);
-                    
+
+      foreach (var fPath in files)
+      {
+        OnProgress?.Invoke("find: " + fPath);
+        progressMax += 2;
+        progress += 1;
+        OnProgressBar?.Invoke(progressMax, progress);
+      }
+
       if (subfolders == true && dirs.Length > 0)
       {
-        foreach(string dir in dirs)
+        foreach (string dir in dirs)
         {
-          var a = FindImage(dir, ext, true);
-          Console.WriteLine($"{dir}: {a}");
+          FindImages(dir, ext, true);
         }
       }
-
-      return true;
     }
-    catch(Exception ex)
+    catch (Exception ex)
     {
-      return false;
-    }  
+    }
   }
 
-  public void Execute(string path, ImageFileType originalExt, ImageFileType convertToExt, bool subfolders)
+  private async Task ConvertImages(ImageFileType originalExt, ImageFileType convertToExt)
   {
-    Task findTask = new Task(() =>
+    foreach (var file in pathList)
     {
-      FindImg(path, originalExt, subfolders);
-    });
-    Task convertTask = new Task(() =>
-    {
-      foreach (var file in pathList)
-      {
-        ConvertImage(file, originalExt);
-      }
-    });
-    Task deleteTask = new Task(() =>
-    {
-      foreach (var file in pathList)
-      {
-        File.Delete(file);
-      }
-    });
-
-    findTask.Start();
-    findTask.Wait();
-    
-    convertTask.Start();
-    convertTask.Wait();
-    
-    deleteTask.Start();
-    deleteTask.Wait();
+      ConvertImage(file, originalExt, convertToExt);
+    }
   }
-  
-  
+
+  private async Task DeleteImages()
+  {
+    foreach (var file in pathList)
+    {
+      File.Delete(file);
+      OnProgress?.Invoke("delete: " + file);
+      progress += 1;
+      OnProgressBar?.Invoke(progressMax, progress);
+    }
+  }
+
+  public async Task Execute(string path, ImageFileType originalExt, ImageFileType convertToExt, bool subfolders)
+  {
+    Task findTask = FindImages(path, originalExt, subfolders);
+    Task convertTask = ConvertImages(originalExt, convertToExt);
+    Task deleteTask = DeleteImages();
+
+    await findTask;
+    await convertTask;
+    await deleteTask;
+  }
 }
