@@ -5,8 +5,30 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WebpConverter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="webp converter" Height="298" Width="421">
+  <Grid>
 
-    </Grid>
+    <GroupBox Header="Execute" Margin="10,145,10,0" Height="109" VerticalAlignment="Top">
+      <Grid>
+        <ProgressBar x:Name="pbProgress"  Height="11" Margin="10,40,10,0" VerticalAlignment="Top" />
+        <Label x:Name="lbProgress" Content="-" Margin="10" VerticalAlignment="Top"/>
+        <Button x:Name="btnExecute" Content="Convert" HorizontalAlignment="Right" Margin="0,58,10,0" VerticalAlignment="Top" Height="22" Width="68"/>
+      </Grid>
+    </GroupBox>
+    <GroupBox Header="Path" Margin="10,10,10,0" Height="73" VerticalAlignment="Top">
+      <Grid>
+        <CheckBox x:Name="cbSubfolders" Content="Include subfolders" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbPath" Margin="10,10,45,0" TextWrapping="NoWrap" ToolTip="path" Height="21" VerticalAlignment="Top"/>
+        <Button x:Name="btnOpen" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="30" Height="19"/>
+      </Grid>
+    </GroupBox>
+    <GroupBox Header="Convert To" Margin="10,82,10,0" Padding="10,10,10,10" Height="64" VerticalAlignment="Top">
+      <Grid HorizontalAlignment="Right" Width="369">
+        <ComboBox VerticalAlignment="Top" IsReadOnly="True" Margin="0,0,218,0" HorizontalAlignment="Left" Width="150" />
+        <TextBlock HorizontalAlignment="Center" Margin="0,0,0,0" TextWrapping="Wrap" Text="→" VerticalAlignment="Top"/>
+        <ComboBox VerticalAlignment="Center" HorizontalAlignment="Right" Width="150"/>
+
+      </Grid>
+    </GroupBox>
+  </Grid>
 </Window>
