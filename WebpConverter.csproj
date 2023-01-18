@@ -8,8 +8,4 @@
         <UseWindowsForms>true</UseWindowsForms>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="GroupDocs.Conversion" Version="22.12.0" />
-    </ItemGroup>
-
 </Project>

@@ -15,7 +15,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using GroupDocs.Conversion.FileTypes;
 
 namespace WebpConverter
 {
@@ -25,6 +24,7 @@ namespace WebpConverter
   public partial class MainWindow : Window
   {
     private ImageConverter imgConverter = new ImageConverter();
+    private string[] exts = new[] {"png", "webp", "jpeg", "jpg", "gif", "bmp"};
 
     public MainWindow()
     {
@@ -34,14 +34,14 @@ namespace WebpConverter
       imgConverter.AfterExecute += ImgConverterOnAfterExecute;
       imgConverter.BeforeExecute += ImgConverterOnBeforeExecute;
 
-      foreach (var ext in ImageFileType.GetAll<ImageFileType>())
+      foreach (var ext in exts)
       {
-        cbbBeforeExt.Items.Add(ext.Extension);
-        cbbAfterExt.Items.Add(ext.Extension);
+        cbbBeforeExt.Items.Add(ext);
+        cbbAfterExt.Items.Add(ext);
       }
 
-      cbbBeforeExt.SelectedValue = ImageFileType.Webp.Extension;
-      cbbAfterExt.SelectedValue = ImageFileType.Jpg.Extension;
+      cbbBeforeExt.SelectedValue = "webp";
+      cbbAfterExt.SelectedValue = "jpg";
     }
 
     private void ImgConverterOnBeforeExecute()
@@ -90,8 +90,8 @@ namespace WebpConverter
 
     private async void BtnExecute_OnClick(object sender, RoutedEventArgs e)
     {
-      imgConverter.Execute(tbPath.Text, (ImageFileType) (ImageFileType.FromExtension(cbbBeforeExt.Text)),
-        (ImageFileType) (ImageFileType.FromExtension(cbbAfterExt.Text)), cbSubfolders.IsChecked.Value);
+      imgConverter.Execute(tbPath.Text, cbbBeforeExt.Text, cbbAfterExt.Text, cbSubfolders.IsChecked.Value,
+        cbDeleteOriginals.IsChecked.Value);
     }
   }
 }
