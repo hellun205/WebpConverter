@@ -103,14 +103,14 @@ public class ImageConverter
     }
   }
 
-  public void Execute(string path, string originalExt, string convertToExt, bool subfolders)
+  public void Execute(string path, string originalExt, string convertToExt, bool subfolders, bool isDelete)
   {
-    Thread findTask = new Thread(new ThreadStart(() =>
+    Thread converting = new Thread(new ThreadStart(() =>
     {
       BeforeExecute?.Invoke();
       FindImages(path, originalExt, subfolders);
       ConvertImages(convertToExt);
-      DeleteImages();
+      if(isDelete) DeleteImages();
       if (failPathList.Count > 0)
       {
         OnProgress?.Invoke($"convert completed with fail: {failPathList.Count}");
@@ -123,13 +123,14 @@ public class ImageConverter
       {
         OnProgress?.Invoke("convert completed!");
       }
+      OnProgressBar?.Invoke(1,1);
       AfterExecute?.Invoke();
 
       Clear();
     }));
 
 
-    findTask.Start();
+    converting.Start();
   }
 
   public void Clear()

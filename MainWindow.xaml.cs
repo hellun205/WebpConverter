@@ -90,7 +90,8 @@ namespace WebpConverter
 
     private async void BtnExecute_OnClick(object sender, RoutedEventArgs e)
     {
-      imgConverter.Execute(tbPath.Text, cbbBeforeExt.Text, cbbAfterExt.Text, cbSubfolders.IsChecked.Value);
+      imgConverter.Execute(tbPath.Text, cbbBeforeExt.Text, cbbAfterExt.Text, cbSubfolders.IsChecked.Value,
+        cbDeleteOriginals.IsChecked.Value);
     }
   }
 }
