@@ -20,11 +20,12 @@
         <CheckBox x:Name="cbSubfolders" Content="Include subfolders" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <TextBox x:Name="tbPath" Margin="10,10,45,0" TextWrapping="NoWrap" ToolTip="path" Height="21" VerticalAlignment="Top"/>
         <Button x:Name="btnOpen" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="30" Height="19" Click="BtnOpen_OnClick"/>
+        <CheckBox x:Name="cbDeleteOriginals" Content="Delete Original" HorizontalAlignment="Left" Margin="140,30,0,0" VerticalAlignment="Top" IsChecked="False"/>
       </Grid>
     </GroupBox>
     <GroupBox Header="Convert To" Margin="10,82,10,0" Padding="10,10,10,10" Height="64" VerticalAlignment="Top">
       <Grid>
-        <ComboBox x:Name="cbbBeforeExt" VerticalAlignment="Top" IsReadOnly="True" HorizontalAlignment="Left" Width="150" />
+        <ComboBox x:Name="cbbBeforeExt" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Left" Width="150" />
         <TextBlock HorizontalAlignment="Center" Margin="0,0,0,0" TextWrapping="Wrap" Text="→" VerticalAlignment="Top"/>
         <ComboBox x:Name="cbbAfterExt" VerticalAlignment="Center" HorizontalAlignment="Right" Width="150"/>
 
